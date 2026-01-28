@@ -25,6 +25,12 @@ endif()
 # ====================================================================================
 set(PICO_BOARD pico CACHE STRING "Board type")
 
+set_source_files_properties(
+  usb_descriptors.c
+  PROPERTIES
+  LANGUAGE C
+)
+
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
@@ -35,11 +41,13 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(hello_midi
-        hello_midi.c
-        )
+add_executable(hello_midi hello_midi.c usb_descriptors.c)
 
-target_link_libraries(hello_midi pico_stdlib hardware_adc)
+target_link_libraries(hello_midi pico_stdlib hardware_adc tinyusb_device tinyusb_board)
+
+# below enables/disables output over UART/USB
+pico_enable_stdio_uart(hello_midi 0)
+pico_enable_stdio_usb(hello_midi 1)
 
 # create map/bin/hex file etc.
 pico_add_extra_outputs(hello_midi)
