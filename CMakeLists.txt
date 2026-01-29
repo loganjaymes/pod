@@ -25,12 +25,6 @@ endif()
 # ====================================================================================
 set(PICO_BOARD pico CACHE STRING "Board type")
 
-set_source_files_properties(
-  usb_descriptors.c
-  PROPERTIES
-  LANGUAGE C
-)
-
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
@@ -41,15 +35,24 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(hello_midi hello_midi.c usb_descriptors.c)
+cmake_minimum_required(VERSION 3.13)
 
-target_link_libraries(hello_midi pico_stdlib hardware_adc tinyusb_device tinyusb_board)
+add_executable(hello_midi)
 
-# below enables/disables output over UART/USB
-pico_enable_stdio_uart(hello_midi 0)
+target_sources(hello_midi PUBLIC
+        ${CMAKE_CURRENT_LIST_DIR}/hello_midi.c
+        ${CMAKE_CURRENT_LIST_DIR}/usb_descriptors.c
+        )
+
+# Make sure TinyUSB can find tusb_config.h
+target_include_directories(hello_midi PUBLIC
+        ${CMAKE_CURRENT_LIST_DIR})
+
+# In addition to pico_stdlib required for common PicoSDK functionality, add dependency on tinyusb_device
+# for TinyUSB device support and tinyusb_board for the additional board support library used by the example
+target_link_libraries(hello_midi PUBLIC pico_stdlib pico_unique_id tinyusb_device tinyusb_board hardware_adc)
+
 pico_enable_stdio_usb(hello_midi 1)
-
-# create map/bin/hex file etc.
 pico_add_extra_outputs(hello_midi)
 
 # add url via pico_set_program_url
