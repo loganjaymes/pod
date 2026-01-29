@@ -52,7 +52,7 @@ target_include_directories(hello_midi PUBLIC
 # for TinyUSB device support and tinyusb_board for the additional board support library used by the example
 target_link_libraries(hello_midi PUBLIC pico_stdlib pico_unique_id tinyusb_device tinyusb_board hardware_adc)
 
-pico_enable_stdio_usb(hello_midi 1)
+pico_enable_stdio_usb(hello_midi 0)
 pico_add_extra_outputs(hello_midi)
 
 # add url via pico_set_program_url
