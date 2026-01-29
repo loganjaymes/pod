@@ -6,6 +6,7 @@
 int main() {
     stdio_init_all();
     adc_init();
+    tusb_init();
 
     adc_gpio_init(26); 
     adc_gpio_init(27); 
