@@ -1,14 +1,14 @@
 ===== START =====
-1. set up circuit
+X. set up circuit
 ===== GENERAL IO =====
-1. put piezos in ADC pins (will need muxer later but LATER)
+X. put piezos in ADC pins (will need muxer later but LATER)
 2. figure out note values for each drum head
 3. in while loop, contiually read for input for each ADC pin
 4. based on pin, send note value to DAW
 5. add velocity in midi msg
 ===== VELOCITY =====
-1. run piezo through circuit into hello ADC
-2. get range of values from piezo
+X. run piezo through circuit into hello ADC
+~. get range of values from piezo
 3. write a way to condense said range
 	int piezo_calc_velocity(..., unsigned float (?maybe double) val) {
 		new_val = val / SOME_FACTOR => [0...127]?

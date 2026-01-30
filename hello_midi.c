@@ -94,6 +94,7 @@ void midi_task(void)
     tud_midi_packet_read(packet);
   }
 
+  // REMOVE
   // send note periodically
   if (board_millis() - start_ms < 286) {
     return; // not enough time
@@ -108,22 +109,25 @@ void midi_task(void)
   if (previous < 0) {
     previous = sizeof(note_sequence) - 1;
   }
+  // TS
 
   // Send Note On for current position at full velocity (127) on channel 1.
-  uint8_t note_on[3] = { 0x90 | channel, note_sequence[note_pos], 127 };
+  uint8_t note_on[3] = { 0x90 | channel, note_sequence[note_pos], 127 };  // TODO: ALTER note_seq to just regular note, and channel to smth else?
   tud_midi_stream_write(cable_num, note_on, 3);
 
   // Send Note Off for previous note.
   uint8_t note_off[3] = { 0x80 | channel, note_sequence[previous], 0};
   tud_midi_stream_write(cable_num, note_off, 3);
 
+  // REMOVE
   // Increment position
   note_pos++;
-
+  
   // If we are at the end of the sequence, start over.
   if (note_pos >= sizeof(note_sequence)) {
     note_pos = 0;
   }
+  // TS
 }
 
 //--------------------------------------------------------------------+
