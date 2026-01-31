@@ -89,7 +89,7 @@ void midi_task(void)
     // Send Note Off for previous note.
     uint8_t note_off[3] = { 0x80 | channel, SNARE, 0};
     tud_midi_stream_write(cable_num, note_off, 3);
-    sleep_ms(500);
+    sleep_ms(50);
   }
 
 }
