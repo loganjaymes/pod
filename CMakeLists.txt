@@ -54,5 +54,3 @@ target_link_libraries(hello_midi PUBLIC pico_stdlib pico_unique_id tinyusb_devic
 
 pico_enable_stdio_usb(hello_midi 0)
 pico_add_extra_outputs(hello_midi)
-
-# add url via pico_set_program_url
