@@ -2,23 +2,14 @@
 X. set up circuit
 ===== GENERAL IO =====
 X. put piezos in ADC pins (will need muxer later but LATER)
-2. figure out note values for each drum head
-3. in while loop, contiually read for input for each ADC pin
+~. figure out note values for each drum head
+X. in while loop, contiually read for input for each ADC pin
 4. based on pin, send note value to DAW
 5. add velocity in midi msg
-===== VELOCITY =====
-X. run piezo through circuit into hello ADC
-X. get range of values from piezo [.13 - 2.2]
-X. write a way to condense said range
-	int piezo_calc_velocity(..., unsigned float (?maybe double) val) {
-		new_val = val / SOME_FACTOR => [0...127]?
-		if val < 1:
-			val = 1
-		elif val > 127:
-			val = 127
-		
-		return new_val
-	}
-4. use said velocity in midi message
 ===== MUXER =====
-idk
+- idk
+===== INTERRUPT/STATE/TOGGLE? =====
+- a button of sorts that tells X pin to switch to midi note Y
+	mostly for switching open hat to closed & vv
+	ideally will be another piezo as a digital in since its faster to press than a button
+- idk

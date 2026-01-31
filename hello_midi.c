@@ -7,9 +7,17 @@
 #include "tusb.h"
 
 // DEFINE ALL NOTE POS
+// GPIO ADC separated by whitespace (since muxing, need to have drums grouped based on which instruments would be least likely to be played synchronously)
 #define KICK 36
 #define SNARE 38
+
+#define TOM_1 0
 #define CLOSED_HAT 60
+
+#define TOM_2 0
+// below on same IO, have interrupt to change or change it based on song ig
+#define CRASH 0 
+#define RIDE 0
 
 enum  {
   BLINK_NOT_MOUNTED = 250,
