@@ -12,7 +12,7 @@
 #define SNARE 38
 
 #define TOM_1 0
-#define CLOSED_HAT 60
+#define HAT 60
 
 #define TOM_2 0
 // below on same IO, have interrupt to change or change it based on song ig
@@ -37,7 +37,8 @@ int main(void) {
   adc_init();
 
   adc_gpio_init(26);
-  gpio_set_dir(0, false);
+  adc_gpio_init(27);
+  adc_gpio_init(28);
   
   // init device stack on configured roothub port
   tusb_rhport_init_t dev_init = {
@@ -73,25 +74,71 @@ void midi_task(void)
     tud_midi_packet_read(packet);
   }
 
+  const float conversion_factor = 3.3f / (1 << 12);
+  const float bit = ((float)((1 << 7) - 1))/((float)((1 << 12) - 1));
+  
   // Select ADC input 0 (GPIO26)
   adc_select_input(0);
-  uint16_t result = adc_read();
-  
-  // calculate velocity 
-  const float bit = ((float)((1 << 7) - 1))/((float)((1 << 12) - 1));
-  uint16_t velocity = result * bit * 1.5;
+  uint16_t kick_or_snare = adc_read();
+  // calculate velocity & voltage (voltage is lowkey redundant but id need to recalc as a digital value, so thats a TODO)
+  uint16_t kos_vel = kick_or_snare * bit * 1.5;
+  double kos_volt = kick_or_snare * conversion_factor;
 
-  const float conversion_factor = 3.3f / (1 << 12);
-  double volt = result * conversion_factor;
+  // Select ADC input 1
+  adc_select_input(1);
+  uint16_t hat_or_tom = adc_read();
+  uint16_t hot_vel = hat_or_tom * bit * 1.5;
+  double hot_volt = hat_or_tom * conversion_factor;
+
+  // Select ADC input 2
+  adc_select_input(2);
+  uint16_t cym_or_tom = adc_read();
+  uint16_t cot_vel = cym_or_tom * bit * 1.5;
+  double cot_volt = cym_or_tom * conversion_factor;
   
-  if (volt >= 0.2) {
-    if (velocity < 30) {
-        velocity = 30;
-    } else if (velocity > 115) {
-        velocity = 115;
+  // TODO: REFACTOR ALL OF TS INTO A FUNCTION OR SOMETHING SO THERES NOT A GIANT IF TREE
+  // KICK NEEDS A LOTTTT HIGHER THRESH
+  if (kos_volt >= 0.4) {
+    if (kos_vel < 30) {
+        kos_vel = 30;
+    } else if (kos_vel > 115) {
+        kos_vel = 115;
     }
+    // ======= MUXER HERE =======
     // Send Note On for current position at full velocity (127) on channel 1.
-    uint8_t note_on[3] = { 0x90 | channel, SNARE, velocity };
+    uint8_t note_on[3] = { 0x90 | channel, KICK, kos_vel };
+    tud_midi_stream_write(cable_num, note_on, 3);
+
+    // Send Note Off for previous note.
+    uint8_t note_off[3] = { 0x80 | channel, KICK, 0};
+    tud_midi_stream_write(cable_num, note_off, 3);
+    sleep_ms(150);
+
+  } else if (hot_volt >= 0.2) {
+    if (hot_vel < 30) {
+        hot_vel = 30;
+    } else if (hot_vel > 115) {
+        hot_vel = 115;
+    }
+    // ======= MUXER HERE =======
+    // Send Note On for current position at full velocity (127) on channel 1.
+    uint8_t note_on[3] = { 0x90 | channel, HAT, hot_vel };
+    tud_midi_stream_write(cable_num, note_on, 3);
+
+    // Send Note Off for previous note.
+    uint8_t note_off[3] = { 0x80 | channel, HAT, 0};
+    tud_midi_stream_write(cable_num, note_off, 3);
+    sleep_ms(50);
+
+  } else if (cot_volt >= 0.1) {
+     if (cot_vel < 30) {
+        cot_vel = 30;
+    } else if (cot_vel > 115) {
+        cot_vel = 115;
+    }
+    // ======= MUXER HERE =======
+    // Send Note On for current position at full velocity (127) on channel 1.
+    uint8_t note_on[3] = { 0x90 | channel, SNARE, cot_vel };
     tud_midi_stream_write(cable_num, note_on, 3);
 
     // Send Note Off for previous note.
@@ -99,7 +146,6 @@ void midi_task(void)
     tud_midi_stream_write(cable_num, note_off, 3);
     sleep_ms(50);
   }
-
 }
 
 //--------------------------------------------------------------------+
