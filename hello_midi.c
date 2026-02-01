@@ -2,6 +2,7 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/adc.h"
+#include "hardware/irq.h"
 
 #include "bsp/board_api.h"
 #include "tusb.h"
@@ -12,7 +13,8 @@
 #define SNARE 38
 
 #define TOM_1 0
-#define HAT 60
+#define HAT_CLOSE 60
+#define HAT_OPEN 64
 
 #define TOM_2 0
 // below on same IO, have interrupt to change or change it based on song ig
@@ -26,9 +28,23 @@ enum  {
 };
 
 static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
+volatile int hat = HAT_CLOSE;  // global var for state change
 
 void led_blinking_task(void);
-void midi_task(void);
+void midi_task(int);
+
+// ========= BUTTON INTERRUPT TO TOGGLE HAT STATE =========
+// a little finnicky, might need to add a sleep somewhere
+void toggle_hat_irq(uint gpio, uint32_t events) {
+  if (gpio == 16 && (events & GPIO_IRQ_EDGE_FALL)) {
+    if (hat == HAT_CLOSE) {
+      hat = HAT_OPEN;
+    } else {
+      hat = HAT_CLOSE;
+    }
+  }
+}
+
 
 /*------------- MAIN -------------*/
 int main(void) {
@@ -36,9 +52,14 @@ int main(void) {
   stdio_init_all();
   adc_init();
 
-  adc_gpio_init(26);
-  adc_gpio_init(27);
-  adc_gpio_init(28);
+  adc_gpio_init(26);  // adc 0
+  adc_gpio_init(27);  // adc 1
+  adc_gpio_init(28);  // adc 2
+  gpio_init(16);      // hat state handler
+  gpio_pull_up(16);
+
+  gpio_set_irq_enabled_with_callback(16, GPIO_IRQ_EDGE_FALL, true, &toggle_hat_irq);
+  
   
   // init device stack on configured roothub port
   tusb_rhport_init_t dev_init = {
@@ -52,7 +73,7 @@ int main(void) {
   while (1) {
     tud_task(); // tinyusb device task
     led_blinking_task();
-    midi_task();
+    midi_task(hat);
   }
 }
 
@@ -60,7 +81,7 @@ int main(void) {
 // MIDI Task
 //--------------------------------------------------------------------+
 
-void midi_task(void)
+void midi_task(int hat_state)
 {
   // static uint32_t start_ms = 0;
   uint8_t const cable_num = 0; // MIDI jack associated with USB endpoint
@@ -122,11 +143,11 @@ void midi_task(void)
     }
     // ======= MUXER HERE =======
     // Send Note On for current position at full velocity (127) on channel 1.
-    uint8_t note_on[3] = { 0x90 | channel, HAT, hot_vel };
+    uint8_t note_on[3] = { 0x90 | channel, hat_state, hot_vel };
     tud_midi_stream_write(cable_num, note_on, 3);
 
     // Send Note Off for previous note.
-    uint8_t note_off[3] = { 0x80 | channel, HAT, 0};
+    uint8_t note_off[3] = { 0x80 | channel, hat_state, 0};
     tud_midi_stream_write(cable_num, note_off, 3);
     sleep_ms(50);
 
