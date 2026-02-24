@@ -37,16 +37,16 @@ void read_mux(float* out_buffer) {
         gpio_put(26, 0); 
         sleep_us(5); // buffer
 
-        // use as ADV
+        // use as ADC
         adc_gpio_init(26);
 
         // open each channel
         gpio_put(MUX_PINS[i], 1);
-        sleep_us(20); // Slightly longer settling time
+        sleep_us(20); // should 'settle' the pin
         
         out_buffer[i] = (float)adc_read();
         
-        gpio_put(MUX_PINS[i], 0);
+        gpio_put(MUX_PINS[i], 0); 
     }
 }
 
@@ -67,17 +67,17 @@ int main() {
     // uint16_t velocity;
     
 
-    float mux_values[] = {0, 0, 0, 0};
+    float mux_vals[] = {0, 0, 0, 0};
 
     while (1) {
         printf("MUX ARR:\n");
-        printf("[\n0: %f\n", mux_values[0] * conversion_factor);
-        printf("1: %f\n", mux_values[1] * conversion_factor);
-        printf("2: %f\n", mux_values[2] * conversion_factor);
-        printf("3: %f\n]\n", mux_values[3] * conversion_factor);
-        read_mux(mux_values);
+        printf("[\n0: %f\n", mux_vals[0] * conversion_factor);
+        printf("1: %f\n", mux_vals[1] * conversion_factor);
+        printf("2: %f\n", mux_vals[2] * conversion_factor);
+        printf("3: %f\n]\n", mux_vals[3] * conversion_factor);
+        read_mux(mux_vals);
         
-        MuxResult max_data = get_max(mux_values);
+        MuxResult max_data = get_max(mux_vals);
 
         printf("max val of %f on channel %d\n", max_data.value, max_data.index);
         
