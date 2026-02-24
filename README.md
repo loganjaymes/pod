@@ -22,7 +22,7 @@ See the [documentation](DOCS.md).
 
 |  #  | Task                                                                                   | Status |
 | :-: | -------------------------------------------------------------------------------------- | :----: |
-|  1  | Basic functionality (randomizing given .mid files & exporting)                         |   ✅   |
+|  1  | Basic functionality                                                                    |   ✅   |
 |  2  | Muxing (works, but has some issues)                                                    |    ⚠   |
 |  3  | Add better documentation                                                               |    ⚠   |
 |  4  | Buying a dedicated mux...                                                              |   ❌   |
